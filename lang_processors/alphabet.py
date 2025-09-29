@@ -40,7 +40,6 @@ class AlphabetProcessor:
         doc_profile = {letter: count/doc_total_letters for letter, count in doc_counts.items()}
 
         similarities = {}
-        # Собираем все уникальные буквы из всех профилей
         all_letters = set(doc_profile.keys())
         for lang_profile in self.profiles.values():
             all_letters.update(lang_profile.keys())

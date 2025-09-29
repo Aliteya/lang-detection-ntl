@@ -3,13 +3,13 @@ import random
 import re
 import wikipedia
 
-size = 120
+size = 300
 
 ru_filename = "train_data/ru_train.txt"
-ru_topics = ["Наука", "Спорт", "История", "Технологии", "Философия", "Литература"]
+ru_topics = ["Наука", "Технологии", "Литература"]
 
 en_filename = "train_data/en_train.txt"
-en_topics = ["Science", "History",  "Technology", "Sport", "Literature","Philosophy"]
+en_topics = ["Science", "Technology", "Literature"]
 
 def ru_clean_traslations(text: str) -> str:
     text = text.lower() 
