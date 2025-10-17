@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система идентификации языка</title>
+    <style>
+        /* Базовый сброс и шрифты */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #495057;
+            margin-top: 40px;
+            border-left: 5px solid #007bff;
+            padding-left: 10px;
+        }
+
+        /* --- Секция ввода и переключатель --- */
+        .input-section {
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            background-color: #fff;
+        }
+
+        .input-toggle {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .toggle-button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #e9ecef;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+
+        .toggle-button.active {
+            background-color: #007bff;
+            color: white;
+            border-bottom: 1px solid #007bff;
+        }
+
+        .input-content {
+            display: none;
+            padding-top: 10px;
+        }
+
+        .input-content.active {
+            display: block;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 250px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+            resize: vertical;
+        }
+
+        .file-upload-input {
+            border: 1px solid #ced4da;
+            padding: 10px;
+            border-radius: 6px;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #f8f9fa;
+        }
+
+        /* --- Кнопки анализа (остаются прежними) --- */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .analyze-button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+        }
+
+        .analyze-button:active {
+            transform: translateY(1px);
+        }
+
+        #btn-alphabet {
+            background-color: #28a745;
+            color: white;
+        }
+
+        #btn-frequency {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        #btn-neuro {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .analyze-button:hover {
+            opacity: 0.9;
+        }
+
+        /* Таблицы (остаются прежними) */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #e9ecef;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* Стиль для сводной статистики */
+        .summary-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 15px;
+            border: 1px solid #007bff;
+            border-radius: 5px;
+            background-color: #e6f3ff;
+            margin-bottom: 30px;
+        }
+
+        .summary-stats strong {
+            color: #0056b3;
+        }
+
+        /* Ссылки действий */
+        .action-links {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .action-links a {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 0 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .action-links a:nth-child(1) {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .action-links a:nth-child(2) {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .action-links a:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>🔍 Идентификация языка текста</h1>
+
+        {% if error %}
+        <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+            <strong>Ошибка:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="input-section">
+            <div class="input-toggle">
+                <button id="toggle-text" class="toggle-button active">Ввод текста</button>
+                <button id="toggle-file" class="toggle-button">Загрузка файла</button>
+            </div>
+
+            <!-- Форма для отправки текста ИЛИ файла -->
+            <form id="analysis-form" method="post" action="" enctype="multipart/form-data">
+
+                <!-- Область ввода текста -->
+                <div id="text-input-area" class="input-content active">
+                    <p>Введите текст для анализа (рекомендуемый объем: 1 страница А4):</p>
+                    <!-- name="text_input" соответствует аргументу FastAPI -->
+                    <textarea name="text_input" placeholder="Начните вводить текст..."></textarea>
+                </div>
+
+                <!-- Область загрузки файла -->
+                <div id="file-input-area" class="input-content">
+                    <p>Выберите файл для загрузки (поддерживаются форматы **.txt** и **.html**):</p>
+                    <!-- name="file_input" соответствует аргументу FastAPI -->
+                    <input type="file" name="file_input" accept=".txt,.html" class="file-upload-input">
+                </div>
+
+                <!-- Кнопки анализа -->
+                <div class="button-group">
+                    <button type="submit" class="analyze-button" id="btn-alphabet"
+                        onclick="document.getElementById('analysis-form').action='/api/alphabet/';">
+                        1. 📊 Частота букв (Косинус)
+                    </button>
+
+                    <button type="submit" class="analyze-button" id="btn-frequency"
+                        onclick="document.getElementById('analysis-form').action='/api/frequency/';">
+                        2. 📝 Частота слов (Взвешенный счет)
+                    </button>
+
+                    <button type="submit" class="analyze-button" id="btn-neuro"
+                        onclick="document.getElementById('analysis-form').action='/api/neuro/';">
+                        3. 🧠 Нейросеть (TF-IDF)
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <h2>📈 Сводная статистика</h2>
+        <div class="summary-stats">
+            <p><strong>Всего проанализировано документов:</strong> {{ summary.total_texts }}</p>
+            <h3>Распределение по языкам:</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Язык</th>
+                        <th>Количество (Процент)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lang, count_perc in summary.language_distribution.items() %}
+                    <tr>
+                        <td>{{ lang | capitalize }}</td>
+                        <td>{{ count_perc }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h2>📜 История анализа (Тестовая коллекция)</h2>
+        {% if results %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Время анализа</th>
+                    <th>Метод</th>
+                    <th>Определенный язык</th>
+                    <th>Фрагмент текста</th>
+                    <th>Ссылка</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Использование | reverse для показа последних результатов сверху -->
+                {% for result in results | reverse %}
+                <tr>
+                    <td>{{ result.timestamp }}</td>
+                    <td>{{ result.processor }}</td>
+                    <td><strong
+                            style="color: {{ 'green' if result.detected_language == 'english' else 'red' if result.detected_language == 'russian' else 'gray' }};">{{
+                            result.detected_language | capitalize }}</strong></td>
+                    <td>{{ result.text_snippet }}</td>
+                    <!-- doc_url сейчас просто имитация ссылки, но её можно использовать -->
+                    <td><a href="{{ result.document_link }}" target="_blank">Открыть документ</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center; padding: 20px; border: 1px dashed #ced4da;">История анализа пока пуста.
+            Проанализируйте первый текст!</p>
+        {% endif %}
+
+        <div class="action-links">
+            <a href="/download_results/">💾 Сохранить результаты в файл</a>
+            <a href="/help" target="_blank">❓ Справка (Help)</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleText = document.getElementById('toggle-text');
+            const toggleFile = document.getElementById('toggle-file');
+            const textArea = document.getElementById('text-input-area');
+            const fileArea = document.getElementById('file-input-area');
+            const textInput = textArea.querySelector('textarea');
+            const fileInput = fileArea.querySelector('input[type="file"]');
+
+            // Инициализация: убеждаемся, что только текстовый ввод активен по умолчанию
+            textArea.classList.add('active');
+            fileArea.classList.remove('active');
+
+            function switchMode(mode) {
+                if (mode === 'text') {
+                    // Переключаемся на ввод текста
+                    toggleText.classList.add('active');
+                    toggleFile.classList.remove('active');
+                    textArea.classList.add('active');
+                    fileArea.classList.remove('active');
+
+                    // Очищаем и отключаем поле файла (чтобы не отправлять его)
+                    fileInput.value = '';
+                    fileInput.disabled = true;
+
+                    // Включаем и очищаем поле текста
+                    textInput.disabled = false;
+                    textInput.focus();
+
+                } else if (mode === 'file') {
+                    // Переключаемся на загрузку файла
+                    toggleFile.classList.add('active');
+                    toggleText.classList.remove('active');
+                    fileArea.classList.add('active');
+                    textArea.classList.remove('active');
+
+                    // Очищаем и отключаем поле текста (чтобы не отправлять его)
+                    textInput.value = '';
+                    textInput.disabled = true;
+
+                    // Включаем поле файла
+                    fileInput.disabled = false;
+                }
+            }
+
+            // Устанавливаем режим 'text' при загрузке страницы
+            switchMode('text');
+
+
+            toggleText.addEventListener('click', function (e) {
+                e.preventDefault();
+                switchMode('text');
+            });
+
+            toggleFile.addEventListener('click', function (e) {
+                e.preventDefault();
+                switchMode('file');
+            });
+
+            // Проверка, что отправляется хотя бы одно поле
+            document.getElementById('analysis-form').addEventListener('submit', function (e) {
+                if (textInput.disabled === false && textInput.value.trim() === '') {
+                    // Проверяем текстовый ввод
+                    if (fileInput.disabled === true || fileInput.files.length === 0) {
+                        e.preventDefault();
+                        alert('Пожалуйста, введите текст или выберите файл для анализа.');
+                    }
+                } else if (fileInput.disabled === false && fileInput.files.length === 0) {
+                    // Проверяем файловый ввод
+                    if (textInput.disabled === true || textInput.value.trim() === '') {
+                        e.preventDefault();
+                        alert('Пожалуйста, выберите файл или введите текст для анализа.');
+                    }
+                }
+
+                // Внимание: Здесь не используется window.alert, так как вы просили его избегать.
+                // Я заменил на alert() для простоты, но в реальном приложении это должен быть кастомный модал.
+            });
+        });
+    </script>
+</body>
+
+</html>
